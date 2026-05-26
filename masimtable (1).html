@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="마심표">
+<meta name="theme-color" content="#1a1a2e">
+<title>마심표 🍶</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f1a;
+  --bg2: #1a1a2e;
+  --bg3: #16213e;
+  --card: #1e1e35;
+  --card2: #252540;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.15);
+  --text: #f0f0ff;
+  --text2: #9090b8;
+  --text3: #5a5a80;
+  --purple: #8b7cf8;
+  --purple2: #6c5de8;
+  --purple-soft: rgba(139,124,248,0.15);
+  --green: #4ade80;
+  --green-soft: rgba(74,222,128,0.12);
+  --amber: #fbbf24;
+  --amber-soft: rgba(251,191,36,0.12);
+  --red: #f87171;
+  --red-soft: rgba(248,113,113,0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; overflow: hidden; }
+
+/* SPLASH */
+#splash {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 999; transition: opacity 0.5s;
+}
+#splash .logo { font-size: 72px; margin-bottom: 12px; animation: bounce 1s ease infinite alternate; }
+#splash h1 { font-size: 28px; font-weight: 700; color: var(--purple); }
+#splash p { font-size: 14px; color: var(--text2); margin-top: 6px; }
+@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+
+/* LAYOUT */
+.app { display: flex; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; }
+.screen { display: none; flex: 1; overflow-y: auto; padding: 0 16px 100px; }
+.screen.active { display: block; }
+
+/* NAV */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: var(--bg2); border-top: 0.5px solid var(--border);
+  display: flex; padding: 8px 0 20px;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: none; border: none; cursor: pointer; padding: 6px 0;
+  color: var(--text3); font-size: 10px; font-family: 'Noto Sans KR', sans-serif;
+  transition: color 0.2s;
+}
+.nav-btn.active { color: var(--purple); }
+.nav-icon { font-size: 22px; }
+
+/* HEADER */
+.page-header { padding: 20px 0 12px; display: flex; align-items: center; justify-content: space-between; }
+.page-title { font-size: 20px; font-weight: 700; }
+.page-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* CARDS */
+.card {
+  background: var(--card); border: 0.5px solid var(--border);
+  border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px;
+}
+.card-label { font-size: 11px; color: var(--text3); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 10px; }
+
+/* CHARACTER */
+.char-hero { text-align: center; padding: 20px 0 8px; }
+.char-emoji-big { font-size: 88px; line-height: 1; display: block; transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1); filter: drop-shadow(0 0 24px rgba(139,124,248,0.3)); }
+.char-status { font-size: 13px; color: var(--text2); margin-top: 8px; }
+.char-status strong { color: var(--purple); }
+
+/* GAUGE */
+.gauge-wrap { margin: 4px 0 12px; }
+.gauge-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.gauge-pct { font-size: 32px; font-weight: 700; color: var(--text); }
+.gauge-pct span { font-size: 16px; color: var(--text2); }
+.gauge-bg { height: 10px; background: var(--bg3); border-radius: 6px; overflow: visible; position: relative; }
+.gauge-fill { height: 100%; border-radius: 6px; transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1), background 0.4s; position: relative; }
+.gauge-fill::after {
+  content: ''; position: absolute; right: -4px; top: -3px;
+  width: 16px; height: 16px; border-radius: 50%; background: inherit;
+  box-shadow: 0 0 8px currentColor;
+}
+.gauge-ticks { display: flex; justify-content: space-between; margin-top: 6px; }
+.gauge-tick { font-size: 10px; color: var(--text3); }
+
+/* STAT GRID */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.stat-box { background: var(--bg3); border-radius: var(--radius-sm); padding: 12px 14px; }
+.stat-box .lbl { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+.stat-box .val { font-size: 22px; font-weight: 700; }
+.stat-box .sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+/* ADVICE */
+.advice { border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px; line-height: 1.6; }
+.advice.safe { background: var(--green-soft); color: var(--green); border: 0.5px solid rgba(74,222,128,0.2); }
+.advice.warn { background: var(--amber-soft); color: var(--amber); border: 0.5px solid rgba(251,191,36,0.2); }
+.advice.over { background: var(--red-soft); color: var(--red); border: 0.5px solid rgba(248,113,113,0.2); }
+
+/* PHOTO SCAN */
+.scan-area {
+  border: 1.5px dashed var(--border2); border-radius: var(--radius);
+  padding: 32px 16px; text-align: center; cursor: pointer;
+  transition: all 0.2s; margin-bottom: 12px; position: relative; overflow: hidden;
+}
+.scan-area:hover, .scan-area:active { background: var(--purple-soft); border-color: var(--purple); }
+.scan-area input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+.scan-icon { font-size: 40px; margin-bottom: 8px; }
+.scan-title { font-size: 15px; font-weight: 500; color: var(--text); }
+.scan-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+/* AI RESULT */
+.ai-box {
+  background: var(--bg3); border-radius: var(--radius-sm); padding: 14px;
+  font-size: 13px; color: var(--text2); min-height: 52px; margin-bottom: 12px;
+  transition: all 0.3s; border: 0.5px solid var(--border);
+}
+.ai-box.loading { color: var(--purple); border-color: rgba(139,124,248,0.3); }
+.ai-box.success { color: var(--green); border-color: rgba(74,222,128,0.3); }
+.ai-box.error { color: var(--red); border-color: rgba(248,113,113,0.3); }
+
+/* API KEY */
+.api-input-wrap { margin-bottom: 12px; }
+.api-input-wrap label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; }
+.api-key-field {
+  width: 100%; padding: 10px 12px; background: var(--bg3);
+  border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
+  color: var(--text); font-size: 13px; font-family: monospace;
+}
+.api-key-field:focus { outline: none; border-color: var(--purple); }
+
+/* DRINK ROWS */
+.drink-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.drink-row .dname { flex: 1; font-size: 14px; color: var(--text); }
+.drink-row .dabv { font-size: 11px; color: var(--text3); }
+.qty-ctrl { display: flex; align-items: center; gap: 6px; }
+.qty-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg3); border: 0.5px solid var(--border2);
+  color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.qty-btn:active { background: var(--purple-soft); }
+.qty-val { min-width: 28px; text-align: center; font-size: 15px; font-weight: 700; color: var(--text); }
+
+/* PEOPLE */
+.people-row { display: flex; align-items: center; margin-bottom: 14px; }
+.people-row label { flex: 1; font-size: 14px; color: var(--text); }
+
+/* COND */
+.cond-wrap { display: flex; gap: 8px; flex-wrap: wrap; }
+.cond-btn {
+  padding: 7px 14px; border-radius: 20px;
+  border: 0.5px solid var(--border2); background: transparent;
+  font-size: 13px; color: var(--text2); cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s;
+}
+.cond-btn.sel { background: var(--purple-soft); border-color: var(--purple); color: var(--purple); }
+
+/* CALC BTN */
+.btn-calc {
+  width: 100%; padding: 14px; background: var(--purple2);
+  border: none; border-radius: var(--radius); color: #fff;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif; margin-top: 4px;
+  transition: background 0.15s; active: background: var(--purple);
+}
+.btn-calc:active { background: var(--purple); }
+
+/* HISTORY */
+.history-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; border-bottom: 0.5px solid var(--border);
+}
+.history-item:last-child { border-bottom: none; }
+.history-date { font-size: 11px; color: var(--text3); min-width: 40px; text-align: center; }
+.history-date strong { display: block; font-size: 18px; font-weight: 700; color: var(--text2); }
+.history-body { flex: 1; }
+.history-body .drinks { font-size: 13px; color: var(--text); margin-bottom: 3px; }
+.history-body .pct-bar { height: 4px; border-radius: 2px; background: var(--bg3); overflow: hidden; }
+.history-body .pct-fill { height: 100%; border-radius: 2px; }
+.history-pct { font-size: 13px; font-weight: 700; min-width: 44px; text-align: right; }
+.empty-hist { text-align: center; padding: 32px 0; color: var(--text3); font-size: 14px; }
+
+/* SETTINGS */
+.char-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 4px; }
+.char-btn {
+  background: var(--bg3); border: 1.5px solid transparent;
+  border-radius: var(--radius-sm); padding: 8px 4px; cursor: pointer;
+  text-align: center; font-size: 10px; color: var(--text3);
+  transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif;
+}
+.char-btn.sel { border-color: var(--purple); background: var(--purple-soft); color: var(--purple); }
+.char-face { font-size: 28px; line-height: 1.2; }
+.setting-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.setting-row label { flex: 1; font-size: 14px; color: var(--text); }
+.setting-row select, .setting-row input[type=number] {
+  padding: 8px 10px; background: var(--bg3); border: 0.5px solid var(--border2);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.setting-row input[type=number] { width: 72px; text-align: center; }
+.info-text { font-size: 12px; color: var(--text3); margin-top: -6px; margin-bottom: 12px; }
+.sep { height: 0.5px; background: var(--border); margin: 16px 0; }
+.install-box {
+  background: var(--purple-soft); border: 0.5px solid rgba(139,124,248,0.3);
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px;
+}
+.install-box h3 { font-size: 14px; font-weight: 700; color: var(--purple); margin-bottom: 6px; }
+.install-box p { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.install-box .steps { margin-top: 8px; }
+.install-box .step { font-size: 12px; color: var(--text2); padding: 3px 0; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* LOADING DOTS */
+@keyframes dots { 0%,20%{color:transparent} 40%{color:var(--purple)} 100%{color:transparent} }
+.loading-dots span { animation: dots 1.4s infinite; }
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 500; margin-left: 6px;
+}
+.tag-safe { background: var(--green-soft); color: var(--green); }
+.tag-warn { background: var(--amber-soft); color: var(--amber); }
+.tag-over { background: var(--red-soft); color: var(--red); }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="logo">🍶</div>
+  <h1>마심표</h1>
+  <p>나의 주량 지킴이</p>
+</div>
+
+<div class="app">
+
+  <!-- HOME -->
+  <div class="screen active" id="tab-home">
+    <div class="page-header">
+      <div>
+        <div class="page-title">오늘의 주량</div>
+        <div class="page-sub" id="today-date"></div>
+      </div>
+      <div id="home-tag"></div>
+    </div>
+
+    <div class="card">
+      <div class="char-hero">
+        <span class="char-emoji-big" id="char-display">🐻</span>
+        <div class="char-status" id="char-status">아직 맑음 · <strong>괜찮아요</strong></div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge-head">
+          <div class="gauge-pct" id="gauge-num">0<span>%</span></div>
+          <div style="font-size:12px;color:var(--text2)" id="gauge-label">주량 대비</div>
+        </div>
+        <div class="gauge-bg">
+          <div class="gauge-fill" id="gauge-fill" style="width:0%;background:var(--green);"></div>
+        </div>
+        <div class="gauge-ticks"><span class="gauge-tick">0%</span><span class="gauge-tick">50%</span><span class="gauge-tick">100%</span></div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="lbl">남은 주량</div>
+        <div class="val" id="stat-remain" style="color:var(--green)">2병</div>
+        <div class="sub" id="stat-remain-sub">소주 기준</div>
+      </div>
+      <div class="stat-box">
+        <div class="lbl">오늘 컨디션</div>
+        <div class="val" id="stat-cond" style="color:var(--amber)">최상</div>
+        <div class="sub">취함 속도 반영</div>
+      </div>
+    </div>
+
+    <div class="advice" id="advice-box">
+      오늘 아직 마신 기록이 없어요. 적당히 즐겨요 🌿
+    </div>
+  </div>
+
+  <!-- RECORD -->
+  <div class="screen" id="tab-record">
+    <div class="page-header">
+      <div>
+        <div class="page-title">오늘 마신 술</div>
+        <div class="page-sub">사진 또는 직접 입력</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">AI 사진 인식</div>
+      <div class="scan-area" id="scan-area">
+        <input type="file" accept="image/*" capture="environment" id="photo-input" onchange="handlePhoto(event)">
+        <div class="scan-icon">📸</div>
+        <div class="scan-title">술상 사진 찍기</div>
+        <div class="scan-sub">카메라 또는 갤러리에서 불러오기</div>
+      </div>
+      <div class="ai-box" id="ai-box">AI가 술병 종류와 수량을 자동으로 인식해요.</div>
+
+      <div class="api-input-wrap">
+        <label>Claude API Key (사진 인식에 필요)</label>
+        <input type="password" class="api-key-field" id="api-key" placeholder="sk-ant-..." oninput="saveApiKey()">
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:-6px;margin-bottom:12px;">
+        키는 이 기기에만 저장돼요. <a href="https://console.anthropic.com" style="color:var(--purple);">console.anthropic.com</a> 에서 무료 발급 가능
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">직접 입력</div>
+      <div class="people-row">
+        <label>함께 마신 인원 (나 포함)</label>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="changePeople(-1)">−</button>
+          <span class="qty-val" id="people-val">1</span>
+          <button class="qty-btn" onclick="changePeople(1)">+</button>
+        </div>
+      </div>
+      <div id="drink-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">오늘 컨디션</div>
+      <div class="cond-wrap" id="cond-wrap">
+        <button class="cond-btn sel" onclick="setCond(this,'최상','💪')">최상 💪</button>
+        <button class="cond-btn" onclick="setCond(this,'보통','😐')">보통 😐</button>
+        <button class="cond-btn" onclick="setCond(this,'피곤','😴')">피곤 😴</button>
+        <button class="cond-btn" onclick="setCond(this,'공복','⚠️')">공복 ⚠️</button>
+      </div>
+    </div>
+
+    <button class="btn-calc" onclick="saveAndCalc()">💾 저장하고 계산하기</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="screen" id="tab-history">
+    <div class="page-header">
+      <div>
+        <div class="page-title">음주 기록</div>
+        <div class="page-sub">최근 30일</div>
+      </div>
+      <button onclick="clearHistory()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;">전체 삭제</button>
+    </div>
+    <div class="card" id="history-list">
+      <div class="empty-hist">아직 기록이 없어요 🍵</div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="screen" id="tab-settings">
+    <div class="page-header">
+      <div class="page-title">설정</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">내 캐릭터</div>
+      <div class="char-grid" id="char-grid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">주량 설정</div>
+      <div class="setting-row">
+        <label>기준 술</label>
+        <select id="base-type" onchange="saveSettings()">
+          <option value="soju">소주</option>
+          <option value="beer">맥주</option>
+          <option value="makgeolli">막걸리</option>
+          <option value="wine">와인</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <label>주량 (병/캔)</label>
+        <input type="number" id="base-amount" value="2" min="0.5" max="20" step="0.5" onchange="saveSettings()">
+      </div>
+      <div class="info-text" id="limit-info">소주 2병 = 순알코올 약 72g</div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="install-box">
+      <h3>📱 홈화면에 앱으로 추가하기</h3>
+      <p>이 파일을 저장 후 브라우저에서 열면 앱처럼 사용 가능해요.</p>
+      <div class="steps">
+        <div class="step">iPhone Safari → 공유 버튼 → 홈 화면에 추가</div>
+        <div class="step">Android Chrome → 메뉴(⋮) → 홈 화면에 추가</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:0">
+      <div class="card-label">데이터 관리</div>
+      <button onclick="exportData()" style="width:100%;padding:10px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-bottom:8px;">
+        📤 기록 내보내기 (JSON)
+      </button>
+      <button onclick="clearHistory()" style="width:100%;padding:10px;background:var(--red-soft);border:0.5px solid rgba(248,113,113,0.2);border-radius:var(--radius-sm);color:var(--red);font-size:13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">
+        🗑️ 기록 전체 삭제
+      </button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showTab('home',this)">
+      <span class="nav-icon">🏠</span>홈
+    </button>
+    <button class="nav-btn" onclick="showTab('record',this)">
+      <span class="nav-icon">🍺</span>기록
+    </button>
+    <button class="nav-btn" onclick="showTab('history',this)">
+      <span class="nav-icon">📊</span>히스토리
+    </button>
+    <button class="nav-btn" onclick="showTab('settings',this)">
+      <span class="nav-icon">⚙️</span>설정
+    </button>
+  </nav>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────
+const DRINKS = {
+  soju:      { name:'소주',   vol:360,  abv:0.17, unit:'병' },
+  beer:      { name:'맥주',   vol:500,  abv:0.05, unit:'캔' },
+  makgeolli: { name:'막걸리', vol:750,  abv:0.06, unit:'병' },
+  wine:      { name:'와인',   vol:750,  abv:0.13, unit:'병' },
+  soju_can:  { name:'캔소주', vol:350,  abv:0.16, unit:'캔' },
+  highball:  { name:'하이볼', vol:355,  abv:0.05, unit:'캔' },
+};
+const CHARS = [
+  { id:'bear',    name:'곰돌이', stages:['🐻','😊🐻','🥴🐻','😵🐻','💤🐻','🤮🐻'] },
+  { id:'rabbit',  name:'토순이', stages:['🐰','😄🐰','🥵🐰','😵‍💫🐰','🌀🐰','🚑🐰'] },
+  { id:'fox',     name:'여우야', stages:['🦊','😏🦊','🥂🦊','🫠🦊','😵🦊','🙈🦊'] },
+  { id:'cat',     name:'냥이',   stages:['🐱','😸🐱','😹🐱','🙀🐱','😿🐱','💀🐱'] },
+  { id:'hamster', name:'햄찌',   stages:['🐹','😊🐹','🫣🐹','😵🐹','💫🐹','☠️🐹'] },
+];
+const STAGE_LABELS = ['맑음','살짝 기분 좋음','적당히 취함','꽤 취함','많이 취함','한계 초과'];
+const COND_MULT = { '최상':1.0, '보통':1.1, '피곤':1.3, '공복':1.4 };
+
+// ─── STATE ──────────────────────────────────────────
+let S = {
+  charId: 'bear',
+  baseType: 'soju',
+  baseAmount: 2,
+  people: 1,
+  qty: { soju:0, beer:0, makgeolli:0, wine:0, soju_can:0, highball:0 },
+  cond: '최상',
+  condEmoji: '💪',
+};
+
+// ─── STORAGE ────────────────────────────────────────
+function load() {
+  try {
+    const saved = localStorage.getItem('masimtable_settings');
+    if (saved) { const d = JSON.parse(saved); S.charId=d.charId||S.charId; S.baseType=d.baseType||S.baseType; S.baseAmount=d.baseAmount||S.baseAmount; }
+    const apiKey = localStorage.getItem('masimtable_apikey');
+    if (apiKey) document.getElementById('api-key').value = apiKey;
+  } catch(e) {}
+}
+function saveSettings() {
+  S.baseType = document.getElementById('base-type').value;
+  S.baseAmount = parseFloat(document.getElementById('base-amount').value) || 2;
+  localStorage.setItem('masimtable_settings', JSON.stringify({ charId:S.charId, baseType:S.baseType, baseAmount:S.baseAmount }));
+  const d = DRINKS[S.baseType];
+  const alc = Math.round(d.vol * d.abv * S.baseAmount);
+  document.getElementById('limit-info').textContent = `${d.name} ${S.baseAmount}${d.unit} = 순알코올 약 ${alc}g`;
+  updateHome();
+}
+function saveApiKey() {
+  const key = document.getElementById('api-key').value.trim();
+  if (key) localStorage.setItem('masimtable_apikey', key);
+}
+function getHistory() { try { return JSON.parse(localStorage.getItem('masimtable_history')||'[]'); } catch(e) { return []; } }
+function saveHistory(h) { localStorage.setItem('masimtable_history', JSON.stringify(h)); }
+function exportData() {
+  const data = { settings: JSON.parse(localStorage.getItem('masimtable_settings')||'{}'), history: getHistory() };
+  const a = document.createElement('a');
+  a.href = 'data:application/json,' + encodeURIComponent(JSON.stringify(data, null, 2));
+  a.download = '마심표_기록.json'; a.click();
+}
+function clearHistory() {
+  if (confirm('정말 기록을 모두 삭제할까요?')) { localStorage.removeItem('masimtable_history'); renderHistory(); }
+}
+
+// ─── CALC ────────────────────────────────────────────
+function alcOf(type, bottles) { const d = DRINKS[type]; return d.vol * d.abv * bottles; }
+function baseAlc() { return alcOf(S.baseType, S.baseAmount); }
+function calcPct() {
+  let total = 0;
+  Object.keys(S.qty).forEach(k => { total += alcOf(k, S.qty[k]||0); });
+  const my = (total / S.people) * (COND_MULT[S.cond] || 1.0);
+  return baseAlc() > 0 ? Math.round((my / baseAlc()) * 100) : 0;
+}
+function getStage(pct) {
+  if (pct < 15)  return 0;
+  if (pct < 45)  return 1;
+  if (pct < 70)  return 2;
+  if (pct < 95)  return 3;
+  if (pct < 120) return 4;
+  return 5;
+}
+
+// ─── HOME ─────────────────────────────────────────────
+function updateHome() {
+  const pct = calcPct();
+  const char = CHARS.find(c => c.id === S.charId) || CHARS[0];
+  const stage = getStage(pct);
+  document.getElementById('char-display').textContent = char.stages[stage];
+  document.getElementById('char-status').innerHTML = `${STAGE_LABELS[stage]} · <strong>${char.name}</strong>`;
+  document.getElementById('gauge-num').innerHTML = pct + '<span>%</span>';
+  const fill = document.getElementById('gauge-fill');
+  fill.style.width = Math.min(pct, 100) + '%';
+  fill.style.background = pct < 60 ? 'var(--green)' : pct < 100 ? 'var(--amber)' : 'var(--red)';
+  // remain
+  let total = 0;
+  Object.keys(S.qty).forEach(k => { total += alcOf(k, S.qty[k]||0); });
+  const myShare = total / S.people;
+  const remainAlc = Math.max(0, baseAlc() - myShare);
+  const bd = DRINKS[S.baseType];
+  const remainB = (remainAlc / alcOf(S.baseType, 1)).toFixed(1);
+  document.getElementById('stat-remain').textContent = remainAlc <= 0 ? '0' + bd.unit : remainB + bd.unit;
+  document.getElementById('stat-remain').style.color = remainAlc <= 0 ? 'var(--red)' : 'var(--green)';
+  document.getElementById('stat-remain-sub').textContent = bd.name + ' 기준';
+  document.getElementById('stat-cond').textContent = S.cond + ' ' + S.condEmoji;
+  const today = new Date(); document.getElementById('today-date').textContent = `${today.getMonth()+1}월 ${today.getDate()}일`;
+  const tag = document.getElementById('home-tag');
+  if (pct === 0) { tag.innerHTML = ''; }
+  else if (pct < 70) { tag.innerHTML = '<span class="tag tag-safe">양호</span>'; }
+  else if (pct < 100) { tag.innerHTML = '<span class="tag tag-warn">주의</span>'; }
+  else { tag.innerHTML = '<span class="tag tag-over">초과</span>'; }
+  const adv = document.getElementById('advice-box');
+  const condNote = {최상:'', 보통:'', 피곤:' 피곤한 상태라 더 조심하세요.', 공복:' 공복이라 흡수가 빨라요!'}[S.cond];
+  if (pct === 0) {
+    adv.className='advice safe'; adv.textContent='오늘 아직 마신 기록이 없어요. 적당히 즐겨요 🌿';
+  } else if (pct < 60) {
+    adv.className='advice safe'; adv.textContent=`주량의 ${pct}%.${condNote} 여유 있어요 🌿`;
+  } else if (pct < 90) {
+    adv.className='advice warn'; adv.textContent=`주량의 ${pct}%.${condNote} 슬슬 속도 조절해요 🟡`;
+  } else if (pct < 110) {
+    adv.className='advice warn'; adv.textContent=`주량 거의 다 왔어요 (${pct}%).${condNote} 마무리 고려해보세요 🛑`;
+  } else {
+    adv.className='advice over'; adv.textContent=`주량 초과 (${pct}%)!${condNote} 물 마시고 쉬어요 🚨`;
+  }
+}
+
+// ─── RECORD ──────────────────────────────────────────
+function buildDrinkList() {
+  const el = document.getElementById('drink-list');
+  el.innerHTML = '';
+  Object.keys(DRINKS).forEach(key => {
+    const d = DRINKS[key];
+    const row = document.createElement('div');
+    row.className = 'drink-row';
+    row.innerHTML = `
+      <div style="flex:1">
+        <div class="dname">${d.name}</div>
+        <div class="dabv">${Math.round(d.abv*100)}도 · ${d.vol}ml</div>
+      </div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQty('${key}',-1)">−</button>
+        <span class="qty-val" id="qty-${key}">${S.qty[key]||0}</span>
+        <button class="qty-btn" onclick="changeQty('${key}',1)">+</button>
+      </div>
+    `;
+    el.appendChild(row);
+  });
+}
+function changeQty(key, d) {
+  S.qty[key] = Math.max(0, (S.qty[key]||0) + d);
+  document.getElementById('qty-'+key).textContent = S.qty[key];
+}
+function changePeople(d) {
+  S.people = Math.max(1, S.people + d);
+  document.getElementById('people-val').textContent = S.people;
+}
+function setCond(btn, cond, emoji) {
+  S.cond = cond; S.condEmoji = emoji;
+  document.querySelectorAll('.cond-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+function saveAndCalc() {
+  updateHome();
+  const hist = getHistory();
+  const today = new Date().toISOString().split('T')[0];
+  const idx = hist.findIndex(h => h.date === today);
+  const drinks = {};
+  Object.keys(S.qty).forEach(k => { if (S.qty[k] > 0) drinks[k] = S.qty[k]; });
+  const entry = { date: today, qty: { ...S.qty }, people: S.people, cond: S.cond, pct: calcPct(), drinks };
+  if (idx >= 0) hist[idx] = entry; else hist.unshift(entry);
+  saveHistory(hist.slice(0, 90));
+  renderHistory();
+  showTab('home', document.querySelectorAll('.nav-btn')[0]);
+}
+
+// ─── HISTORY ─────────────────────────────────────────
+function renderHistory() {
+  const hist = getHistory();
+  const el = document.getElementById('history-list');
+  if (!hist.length) { el.innerHTML = '<div class="empty-hist">아직 기록이 없어요 🍵</div>'; return; }
+  el.innerHTML = hist.map(h => {
+    const date = new Date(h.date);
+    const m = date.getMonth()+1, d = date.getDate();
+    const drinkStr = Object.keys(h.drinks||{}).filter(k=>h.drinks[k]>0)
+      .map(k => `${DRINKS[k]?.name||k} ${h.drinks[k]}${DRINKS[k]?.unit||''}`).join(', ') || '기록없음';
+    const pct = h.pct || 0;
+    const col = pct < 70 ? 'var(--green)' : pct < 100 ? 'var(--amber)' : 'var(--red)';
+    const tag = pct < 70 ? 'tag-safe' : pct < 100 ? 'tag-warn' : 'tag-over';
+    return `<div class="history-item">
+      <div class="history-date"><strong>${d}</strong>${m}월</div>
+      <div class="history-body">
+        <div class="drinks">${drinkStr}${h.people>1?' · '+h.people+'명이서':''}</div>
+        <div class="pct-bar"><div class="pct-fill" style="width:${Math.min(pct,100)}%;background:${col};"></div></div>
+      </div>
+      <div class="history-pct" style="color:${col}">${pct}%<br><span class="tag ${tag}" style="margin:0;font-size:10px;">${pct<70?'양호':pct<100?'주의':'초과'}</span></div>
+    </div>`;
+  }).join('');
+}
+
+// ─── SETTINGS ────────────────────────────────────────
+function buildCharGrid() {
+  const grid = document.getElementById('char-grid');
+  grid.innerHTML = CHARS.map(c => `
+    <button class="char-btn${c.id===S.charId?' sel':''}" onclick="selectChar('${c.id}',this)">
+      <div class="char-face">${c.stages[0]}</div>
+      <div>${c.name}</div>
+    </button>`).join('');
+}
+function selectChar(id, btn) {
+  S.charId = id;
+  document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  localStorage.setItem('masimtable_settings', JSON.stringify({ charId:S.charId, baseType:S.baseType, baseAmount:S.baseAmount }));
+  updateHome();
+}
+
+// ─── AI PHOTO ────────────────────────────────────────
+async function handlePhoto(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const apiKey = document.getElementById('api-key').value.trim() || localStorage.getItem('masimtable_apikey');
+  if (!apiKey) { showAiBox('API 키를 먼저 입력해주세요. 설정 탭에서 Claude API 키를 넣어주세요.', 'error'); return; }
+  showAiBox('<div class="loading-dots">🔍 인식 중<span>.</span><span>.</span><span>.</span></div>', 'loading');
+  try {
+    const b64 = await toBase64(file);
+    const mediaType = file.type || 'image/jpeg';
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 400,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: b64 } },
+            { type: 'text', text: '이 사진에서 보이는 술의 종류와 병/캔 수를 파악해줘. 다음 중에서만 선택해: 소주(soju), 맥주(beer), 막걸리(makgeolli), 와인(wine), 캔소주(soju_can), 하이볼(highball). JSON만 응답해. 예시: {"soju":2,"beer":3}. 술이 안 보이면 {}' }
+          ]
+        }]
+      })
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || res.status); }
+    const data = await res.json();
+    const text = data.content.map(c => c.text||'').join('');
+    const clean = text.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(clean);
+    let found = [];
+    Object.keys(result).forEach(k => {
+      if (DRINKS[k] && result[k] > 0) {
+        S.qty[k] = result[k];
+        const el = document.getElementById('qty-'+k);
+        if (el) el.textContent = result[k];
+        found.push(`${DRINKS[k].name} ${result[k]}${DRINKS[k].unit}`);
+      }
+    });
+    if (found.length) { showAiBox('✅ 인식 완료: ' + found.join(', '), 'success'); }
+    else { showAiBox('술이 감지되지 않았어요. 직접 입력해주세요.', 'error'); }
+  } catch(e) {
+    showAiBox('❌ 오류: ' + e.message, 'error');
+  }
+}
+function showAiBox(html, type) {
+  const el = document.getElementById('ai-box');
+  el.innerHTML = html; el.className = 'ai-box ' + type;
+}
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// ─── NAV ──────────────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  else {
+    const map = {home:0,record:1,history:2,settings:3};
+    document.querySelectorAll('.nav-btn')[map[id]]?.classList.add('active');
+  }
+  if (id === 'history') renderHistory();
+}
+
+// ─── INIT ──────────────────────────────────────────────
+function init() {
+  load();
+  document.getElementById('base-type').value = S.baseType;
+  document.getElementById('base-amount').value = S.baseAmount;
+  buildDrinkList();
+  buildCharGrid();
+  updateHome();
+  saveSettings();
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
+    splash.style.opacity = '0';
+    setTimeout(() => splash.style.display = 'none', 500);
+  }, 1200);
+}
+init();
+</script>
+</body>
+</html>
